@@ -16,7 +16,7 @@ contract Dex is ReentrancyGuard, Ownable {
     IERC20 private  tokenX;
     IERC20 private  usdt;
     
-    address vestingAddress= 0x3A282826128170Bfff3c9a60b863a06138850222; 
+    address vestingAddress= 0x994a67837723B5828096295798b1A154E53b15f1; 
 
     Vesting private vestingContract = Vesting(vestingAddress);
 
@@ -37,7 +37,7 @@ contract Dex is ReentrancyGuard, Ownable {
     constructor(address payable initialOwner, address _vestingAddress, address _tokenX) Ownable(initialOwner) {
         //owner = (initialOwner);   //payable(msg.sender);
         tokenX = IERC20(_tokenX);
-        usdt = IERC20(0x72441784AeAFDb42a26880FE4b6e17370029a16c);    
+        usdt = IERC20(0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8);    
         vestingAddress = _vestingAddress;
     }
 
