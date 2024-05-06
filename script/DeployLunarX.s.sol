@@ -10,17 +10,18 @@ import "../src/Dex.sol";
 
 contract RepayScript is Script {
     function run() external {
-        console.log("Repay...");
+        console.log("Deploy...");
 
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        address tokenLunarX = 0x88722fe08849E91eD6dA694B62EFD37885c5dBFd;
-        
-        address tokenUsdt = 0x72441784AeAFDb42a26880FE4b6e17370029a16c;
-        
-        address vestingAddress = 0x3A282826128170Bfff3c9a60b863a06138850222;
-        address owner = 0xd3E7c6032Cb71BAc39C2c16Df41b5364b6158de5;
 
-        address dexAddress =  0x26Eef5ADFd6d0524c5C256930afB0C18BfAb4edd;
+        address tokenLunarX = 0x88722fe08849E91eD6dA694B62EFD37885c5dBFd;
+        address tokenUsdt = 0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8;
+        address ownerAddress = 0xd3E7c6032Cb71BAc39C2c16Df41b5364b6158de5;
+
+        address vestingAddress = 0xA51f83991C2381C5DdF46033D74FAbaec0DdC8Ce;
+
+        address dexAddress =  0x26835F5168303F5b3Aa60CE5bb55Dfb7105B98c1;
+
         Vesting vestingContract = Vesting(vestingAddress);
         LunarX lunarXContract = LunarX(tokenLunarX);
         UsdT usdTContract = UsdT(tokenUsdt);
@@ -28,35 +29,32 @@ contract RepayScript is Script {
         Dex dexContract = Dex(dexAddress);
 
         vm.startBroadcast(deployerPrivateKey);
-       // LunarX Lunar = new LunarX(0xd3E7c6032Cb71BAc39C2c16Df41b5364b6158de5);
-       // Old
-       //UsdT Usd = new UsdT(0xd3E7c6032Cb71BAc39C2c16Df41b5364b6158de5);
-                
-        //Vesting vest = new Vesting(tokenLunarX, 20000, payable(0xd3E7c6032Cb71BAc39C2c16Df41b5364b6158de5));
-        
-       // Dex dex = new Dex(payable(0xd3E7c6032Cb71BAc39C2c16Df41b5364b6158de5), vestingAddress, tokenLunarX);
 
-
-// last call all together
-
-       vestingContract.setDexAddress(dexAddress);
-        lunarXContract.mint(dexAddress, 100e18);
-        usdTContract.approve(dexAddress, 200e6);
-        
-        usdTContract.mint(owner, 100e6); 
-
-       dexContract.depositUSDTandReciveToken(199e6);
-
-
+       // LunarX Lunar = new LunarX(ownerAddress);
        
+       //UsdT Usd = new UsdT(ownerAddress);
+                
+       //Vesting vest = new Vesting(tokenLunarX, 2000, payable(ownerAddress));
+        
+       // Dex dex = new Dex(payable(ownerAddress), vestingAddress, tokenLunarX);
 
-/*deploy lunarX and Usdt
-mint 100e18 to dex
-mint and approve 1e6usdt to owner
-call deposit on dex
-*/
 
-//TODO i think in is better if using a USDC aave faucet sepolia token
+        /////if owner could calling all together/////
+
+        //vestingContract.setDexAddress(dexAddress);
+
+        //lunarXContract.mint(dexAddress, 1000e18);
+
+        usdTContract.approve(dexAddress, 10e6);
+        
+        dexContract.depositUSDTandReciveToken(10e6);
+
+
+        /////finish and withdraw
+
+        //dexContract.withdraw(tokenUsdt);
+
+        //vestingContract.withdraw();
 
         vm.stopBroadcast();
     }
