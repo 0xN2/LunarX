@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Vesting} from "./Vesting.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 // TODO
 // Using SafeTransfer in all transfer
 // Pause
 
 contract Dex is ReentrancyGuard, Ownable {
-    //address payable public owner;
-
+ 
     IERC20 private immutable tokenX;
     IERC20 private immutable usdt;
 
@@ -33,11 +33,11 @@ contract Dex is ReentrancyGuard, Ownable {
     // @param usdT ERC20 with 6 decimals
 
     constructor(
-        address payable initialOwner,
+        address  initialOwner,
         address _vestingAddress,
         address _tokenX
     ) Ownable(initialOwner) {
-        //owner = (initialOwner);   //payable(msg.sender);
+     
         tokenX = IERC20(_tokenX);
         usdt = IERC20(0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8);
         vestingAddress = _vestingAddress;
