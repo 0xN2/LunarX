@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {Vesting} from "./Vesting.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./Vesting.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
 
 // TODO
 // Pause
@@ -49,16 +49,20 @@ contract Dex is ReentrancyGuard, Ownable {
         uint256 allowance = usdt.allowance(msg.sender, address(this));
         require(allowance >= _amount, "Check the token allowance");
         //usdt.transferFrom(msg.sender, address(this), _amount);
+        
+      
         SafeERC20.safeTransferFrom(usdt, msg.sender, address(this), _amount);
 
         uint256 tokenToReceive = ((usdtBalances[msg.sender] *
             tokenX_PRICE_IN_USDT) * 1e12);
         usdtBalances[msg.sender] -= _amount;
-        //tokenX.transfer(address(vestingContract), tokenToReceive);
+      
         SafeERC20.safeTransfer(tokenX, address(vestingContract), tokenToReceive);
 
-        address beneficiary = msg.sender;
-        vestingContract.lock(tokenToReceive, beneficiary);
+       /*  bool sent = tokenX.transfer(address(vestingContract), tokenToReceive);
+        require(sent, "Token transfer failed"); */
+
+        vestingContract.lock(tokenToReceive, msg.sender);
     }
 
     function getBalance(address _tokenAddress) public view returns (uint256) {

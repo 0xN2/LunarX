@@ -29,7 +29,7 @@ contract Vesting is ReentrancyGuard, Ownable {
         // Set a common expiry for all future vesting
         commonExpiry = block.timestamp + _expiryDuration;  
     }
-
+    //TODO
     //add pause role
 
     function lock(uint256 _amount, address _beneficiary) external {
@@ -47,9 +47,8 @@ contract Vesting is ReentrancyGuard, Ownable {
         require(block.timestamp > commonExpiry, "Tokens have not been unlocked");
         require(!schedule.claimed, "Tokens have already been claimed");
         schedule.claimed = true;
-        
+        require(schedule.amount > 0, "not have amount of tokens to withdraw");
         SafeERC20.safeTransfer(token, msg.sender, schedule.amount);
-        //using C E I
         schedule.amount = 0;
     }
 
