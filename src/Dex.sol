@@ -13,10 +13,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Dex is ReentrancyGuard, Ownable {
     //address payable public owner;
 
-    IERC20 private tokenX;
-    IERC20 private usdt;
+    IERC20 private immutable tokenX;
+    IERC20 private immutable usdt;
 
-    address private vestingAddress;
+    address private immutable vestingAddress ;
 
     Vesting private vestingContract;
 
