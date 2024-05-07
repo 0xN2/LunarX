@@ -22,7 +22,7 @@ contract Vesting is ReentrancyGuard, Ownable {
 
     mapping(address => ScheduleLocked) public beneficiaryVesting;
 
-    constructor(address _token, uint256 _expiryDuration, address payable initialOwner) Ownable(initialOwner) {
+    constructor(address _token, uint256 _expiryDuration, address initialOwner) Ownable(initialOwner) {
         // Check that the token address is not 0x0.
         require(_token != address(0x0));
         token = IERC20(_token);
