@@ -32,8 +32,7 @@ contract Vesting is ReentrancyGuard, Pausable, Ownable {
         // Set a common expiry for all future vesting
         commonExpiry = block.timestamp + _expiryDuration;
     }
-    //TODO
-    //add pause role
+
 
     function lock(
         uint256 _amount,

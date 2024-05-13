@@ -6,14 +6,16 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
 // TODO
-// Pause
 // cliff or delay to start, or setter method after deploy
 
 contract Dex is ReentrancyGuard, Pausable, Ownable {
     IERC20 private immutable tokenX;
+   
     IERC20 private immutable usdt;
+    IERC20Permit private immutable usdtPermit;
 
     address private immutable vestingAddress;
 
@@ -34,18 +36,23 @@ contract Dex is ReentrancyGuard, Pausable, Ownable {
     constructor(
         address initialOwner,
         address _vestingAddress,
-        address _tokenX
+        address _tokenX,
+        address _tokenUsdt
     ) Ownable(initialOwner) {
         tokenX = IERC20(_tokenX);
-        usdt = IERC20(0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8);
+        usdt = IERC20(_tokenUsdt);
+        usdtPermit = IERC20Permit(_tokenUsdt);
         vestingAddress = _vestingAddress;
         vestingContract = Vesting(vestingAddress);
     }
 
     function depositUSDTandReciveToken(
-        uint256 _amount
+        uint256 _amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s
     ) public nonReentrant whenNotPaused {
         usdtBalances[msg.sender] += _amount;
+         IERC20Permit(usdtPermit).permit(
+            msg.sender, address(this), _amount , deadline, v, r, s
+        );
 
         uint256 allowance = usdt.allowance(msg.sender, address(this));
         require(allowance >= _amount, "Check the token allowance");
