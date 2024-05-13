@@ -18,9 +18,9 @@ contract RepayScript is Script {
         address tokenUsdt = 0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8;
         address ownerAddress = 0xd3E7c6032Cb71BAc39C2c16Df41b5364b6158de5;
 
-        address vestingAddress = 0xCb4AaA1700dfc8A5cf757359840965bf76d4910A;
+        address vestingAddress = 0xF8b5d87b3937fc8b256C62c2f0a82cc6F7295aDf;
 
-        address dexAddress =  0xC8b2f2A0877bb3dd638561B28D57fDdE1057957c;
+        address dexAddress =  0xfadFb34394186523c7Ba4CeC2C81cd754E8a9f3f;
 
         Vesting vestingContract = Vesting(vestingAddress);
         LunarX lunarXContract = LunarX(tokenLunarX);
@@ -34,14 +34,15 @@ contract RepayScript is Script {
        
        // UsdT Usd = new UsdT(ownerAddress);
                 
-        // Vesting vest = new Vesting(tokenLunarX, 2000,ownerAddress);
+        //Vesting vest = new Vesting(tokenLunarX, 2000, ownerAddress);
         
-        //Dex dex = new Dex(ownerAddress, vestingAddress, tokenLunarX);
+        //Dex dex = new Dex(ownerAddress, vestingAddress, tokenLunarX, tokenUsdt);
 
 
         /////if owner could calling all together/////
+        // the aprove of usdt, need will changed, for permit, take the signature, and after that call the method deposit
 
-        /* vestingContract.setDexAddress(dexAddress);
+       /*  vestingContract.setDexAddress(dexAddress);
 
         lunarXContract.mint(dexAddress, 1000e18);
 
@@ -52,10 +53,12 @@ contract RepayScript is Script {
 
         /////finish and withdraw
 
-       // dexContract.withdraw(tokenUsdt);
+        // dexContract.withdraw(tokenUsdt);
 
-       // vestingContract.withdraw();
+        // vestingContract.withdraw();
 
         vm.stopBroadcast();
     }
 }
+
+// generar pk para wallet test
