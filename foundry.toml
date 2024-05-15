@@ -16,7 +16,7 @@ evm_version = 'shanghai'
   anvil = "http://127.0.0.1:8545"
 [etherscan]
 sepolia = { key = "${API_KEY_ETHERSCAN}" }
-polygon = { key = "${API_KEY_ETHERSCAN}" }
+polygon = { key = "${API_KEY_POLYGONSCAN}" }
 
 [fmt]
   sort_imports = true

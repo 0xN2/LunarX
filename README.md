@@ -1,66 +1,7 @@
-## Foundry
+## Dex https://polygonscan.com/address/0x22DAcCD029c443D1af422f10dabcFB77EB69319f#readContract
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Vesting https://polygonscan.com/address/0xf609E9E0A5de65ECc06a00767304545afF59B770#readContract
 
-Foundry consists of:
+## LunarX https://polygonscan.com/address/0xFF5570d4440aA0380D4ceA8F73A6027C3ce702C6
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
-
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
-```
-
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+## USDC https://polygonscan.com/token/0x3c499c542cef5e3811e1192ce70d8cc03d5c3359
