@@ -19,10 +19,10 @@ contract VestingTest is Test {
         vm.prank(owner);
         vesting = new Vesting(address(token), expiryDuration, owner);
 
-        // Mint tokens to owner and approve to vesting contract
+        // Mint tokens to owner
         token.mint(owner, 10 ether);
 
-        // Transfer some tokens to the contract for testing
+        // Transfer some tokens to the contract
         vm.prank(owner);
         token.transfer(address(vesting), 10 ether);
     }

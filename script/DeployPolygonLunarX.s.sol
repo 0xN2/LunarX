@@ -15,7 +15,7 @@ contract RepayScript is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
         address tokenLunarX = 0xFF5570d4440aA0380D4ceA8F73A6027C3ce702C6;
-        
+
         address tokenUsdt = 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359;
 
         address ownerAddress = 0x2d52CA3A1757275b42599D9dd7EC5afE4a458D76;
@@ -36,9 +36,9 @@ contract RepayScript is Script {
 
         // UsdT Usd = new UsdT(ownerAddress);
 
-        // Vesting vest = new Vesting(tokenLunarX, 20000, ownerAddress);
+        //Vesting vest = new Vesting(tokenLunarX, 20000, ownerAddress);
 
-        //Dex dex = new Dex(ownerAddress, vestingAddress, tokenLunarX, tokenUsdt);
+        Dex dex = new Dex(ownerAddress, vestingAddress, tokenLunarX, tokenUsdt);
 
         /////if owner could calling all together/////
         // the aprove of usdt, need will changed, for permit, take the signature, and after that call the method deposit
@@ -51,7 +51,7 @@ contract RepayScript is Script {
 
         /////finish and withdraw
 
-        dexContract.withdraw(tokenUsdt);
+        //dexContract.withdraw(tokenUsdt);
 
         //vestingContract.withdraw();
 
