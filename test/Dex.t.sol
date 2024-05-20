@@ -1,68 +1,145 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
+
 import "forge-std/Test.sol";
-import "ds-test/test.sol";
 import "../src/Dex.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "forge-std/Vm.sol";
-import {Vesting} from "../src/Vesting.sol";
-
-contract MockToken is ERC20 {
-    constructor() ERC20("MockToken", "MTK") {}
-
-    function mint(address to, uint256 amount) public {
-        _mint(to, amount);
-    }
-}
-contract MockToken2 is ERC20 {
-    constructor() ERC20("MockToken2", "USD") {}
-    function mint(address to, uint256 amount) public {
-        _mint(to, amount);
-    }
-}
+import "../src/Vesting.sol";
+import "./ERC20mock.sol";
 
 contract DexTest is Test {
     Dex dex;
     Vesting vesting;
     MockToken tokenX;
-    MockToken2 usdt;
-    address deployer;
-    address user1;
+    MockToken usdt;
+    address owner = address(0x1);
+    address user = address(0x2);
+    uint256 expiryDuration = 1 weeks;
+    uint256 tokenXPriceInUsdt = 100;
+    uint256 constant USER_PRIVATE_KEY = 2; 
 
     function setUp() public {
-        deployer = address(this);
-
         tokenX = new MockToken();
-        usdt = new MockToken2();
+        usdt = new MockToken();
 
-        // Mint some initial balances
-        //usdt.mint(deployer, 10e6);  // 10 USDT
+        vesting = new Vesting(address(tokenX), expiryDuration, owner);
+        dex = new Dex(owner, address(vesting), address(tokenX), address(usdt));
 
-        vesting = new Vesting(address(tokenX), 2000, deployer);
-        // Vesting vest = new Vesting(tokenLunarX, 2000, ownerAddress);
-
-        // Deploy the Dex contract
-        dex = new Dex(deployer, address(vesting), address(tokenX), address(usdt));
-        //Dex dex = new Dex(ownerAddress, vestingAddress, tokenLunarX);
-
-        // Allow the Dex contract to spend user's USDT
-       // vm.prank(deployer);
        
-        emit log_address(address(vesting));
-        emit log_address(address(dex));
-        emit log_address(address(tokenX));
-        emit log_address(address(usdt));
+        usdt.mint(user, 1000 ether);
+        vm.prank(user);
+        usdt.approve(address(dex), 1000 ether);
+
+        // Mint tokens to vesting contract
+        tokenX.mint(address(vesting), 1000 ether);
     }
 
-    function testDepositUSDTandReceiveTokenX() public {
-      
-         vm.startPrank(address(this));
-          vesting.setDexAddress(address(dex));
-        //console.log(usdt.approve(address(dex), 10e6));
-        tokenX.mint(address(dex), 1000e18);
+    function getPermitSignature(address owner, address spender, uint256 value, uint256 nonce, uint256 deadline, uint256 privateKey) internal returns (uint8, bytes32, bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"),
+                owner,
+                spender,
+                value,
+                nonce,
+                deadline
+            )
+        );
+        bytes32 hash = keccak256(
+            abi.encodePacked(
+                "\x19\x01",
+                usdt.DOMAIN_SEPARATOR(),
+                structHash
+            )
+        );
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, hash);
+        return (v, r, s);
+    }
 
-        usdt.approve(address(dex), 10e6);
-        usdt.mint(deployer, 10e6);
-       // dex.depositUSDTandReciveToken(10e6, block.timestamp,  v,  r,  s);   import Permit, using getSignature
+    function testDepositUSDTandReceiveToken() public {
+        uint256 amount = 10 ether;
+        uint256 deadline = block.timestamp + 1 days;
+        uint256 nonce = usdt.nonces(user);
+        uint256 privateKey = USER_PRIVATE_KEY;  
+
+        (uint8 v, bytes32 r, bytes32 s) = getPermitSignature(user, address(dex), amount, nonce, deadline, privateKey);
+
+        vm.prank(user);
+        dex.depositUSDTandReciveToken(amount, deadline, v, r, s);
+
+        uint256 expectedTokenXAmount = amount * tokenXPriceInUsdt * 1e12;
+        assertEq(vesting.getBeneficiaryAmount(user), expectedTokenXAmount);
+    }
+
+    function testGetBalance() public {
+        uint256 amount = 10 ether;
+        uint256 deadline = block.timestamp + 1 days;
+        uint256 nonce = usdt.nonces(user);
+        uint256 privateKey = USER_PRIVATE_KEY; 
+
+        (uint8 v, bytes32 r, bytes32 s) = getPermitSignature(user, address(dex), amount, nonce, deadline, privateKey);
+
+        vm.prank(user);
+        dex.depositUSDTandReciveToken(amount, deadline, v, r, s);
+
+        assertEq(dex.getBalance(address(usdt)), 10 ether);
+    }
+
+    function testWithdraw() public {
+        uint256 amount = 10 ether;
+        uint256 deadline = block.timestamp + 1 days;
+        uint256 nonce = usdt.nonces(user);
+        uint256 privateKey = USER_PRIVATE_KEY; 
+
+        (uint8 v, bytes32 r, bytes32 s) = getPermitSignature(user, address(dex), amount, nonce, deadline, privateKey);
+
+        vm.prank(user);
+        dex.depositUSDTandReciveToken(amount, deadline, v, r, s);
+
+        vm.startPrank(owner);
+        dex.withdraw(address(usdt));
+        vm.stopPrank();
+
+        assertEq(usdt.balanceOf(owner), 10 ether);
+    }
+
+    function testPauseUnpause() public {
+        vm.startPrank(owner);
+        dex.pause();
+        vm.expectRevert("Pausable: paused");
+        dex.depositUSDTandReciveToken(10 ether, block.timestamp + 1 days, 0, bytes32(0), bytes32(0));
+        dex.unpause();
+        vm.stopPrank();
+
+        uint256 amount = 10 ether;
+        uint256 deadline = block.timestamp + 1 days;
+        uint256 nonce = usdt.nonces(user);
+        uint256 privateKey = USER_PRIVATE_KEY; 
+
+        (uint8 v, bytes32 r, bytes32 s) = getPermitSignature(user, address(dex), amount, nonce, deadline, privateKey);
+
+        vm.prank(user);
+        dex.depositUSDTandReciveToken(amount, deadline, v, r, s);
+        assertEq(vesting.getBeneficiaryAmount(user), amount * tokenXPriceInUsdt * 1e12);
+    }
+
+    function testWithdrawWhenPaused() public {
+        uint256 amount = 10 ether;
+        uint256 deadline = block.timestamp + 1 days;
+        uint256 nonce = usdt.nonces(user);
+        uint256 privateKey = USER_PRIVATE_KEY; 
+
+        (uint8 v, bytes32 r, bytes32 s) = getPermitSignature(user, address(dex), amount, nonce, deadline, privateKey);
+
+        vm.prank(user);
+        dex.depositUSDTandReciveToken(amount, deadline, v, r, s);
+
+        vm.startPrank(owner);
+        dex.pause();
+        vm.stopPrank();
+
+        vm.startPrank(owner);
+        vm.expectRevert("Pausable: paused");
+        dex.withdraw(address(usdt));
+        vm.stopPrank();
     }
 }
