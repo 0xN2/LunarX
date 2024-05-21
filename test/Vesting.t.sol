@@ -25,10 +25,12 @@ contract VestingTest is Test {
         // Transfer some tokens to the contract
         vm.prank(owner);
         token.transfer(address(vesting), 10 ether);
+        
     }
 
     function testLockTokens() public {
         vm.startPrank(owner);
+        vesting.setDexAddress(dexAddress);
         vesting.lock(10 ether, beneficiary);
         vm.stopPrank();
 
@@ -38,6 +40,7 @@ contract VestingTest is Test {
     function testWithdrawTokens() public {
         // Lock tokens first
         vm.startPrank(owner);
+        vesting.setDexAddress(dexAddress);
         vesting.lock(10 ether, beneficiary);
         vm.stopPrank();
 
@@ -61,10 +64,12 @@ contract VestingTest is Test {
 
     function testPauseUnpause() public {
         vm.startPrank(owner);
+        vesting.setDexAddress(dexAddress);
         vesting.pause();
         vm.expectRevert(0xd93c0665);
         vesting.lock(10 ether, beneficiary);
         vesting.unpause();
+        vesting.setDexAddress(dexAddress);
         vesting.lock(10 ether, beneficiary);
         assertEq(vesting.getBeneficiaryAmount(beneficiary), 10 ether);
     }
@@ -72,6 +77,7 @@ contract VestingTest is Test {
     function testWithdrawWhenPaused() public {
         // Lock tokens first
         vm.startPrank(owner);
+        vesting.setDexAddress(dexAddress);
         vesting.lock(10 ether, beneficiary);
         vm.stopPrank();
 
