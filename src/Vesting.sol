@@ -43,6 +43,7 @@ contract Vesting is ReentrancyGuard, Pausable, Ownable {
             msg.sender == owner() || msg.sender == dexAddress,
             "Unauthorized"
         );
+        require(dexAddress != address(0x0), "Remember set the Address of the Dex");
         ScheduleLocked storage schedule = beneficiaryVesting[_beneficiary];
         if (!schedule.claimed) {
             // Add to the existing amount if not yet claimed
@@ -58,9 +59,11 @@ contract Vesting is ReentrancyGuard, Pausable, Ownable {
         );
         require(!schedule.claimed, "Tokens have already been claimed");
         schedule.claimed = true;
+        uint256  amountBeforeToTransfer = schedule.amount;
         require(schedule.amount > 0, "not have amount of tokens to withdraw");
-        SafeERC20.safeTransfer(token, msg.sender, schedule.amount);
         schedule.amount = 0;
+        SafeERC20.safeTransfer(token, msg.sender, amountBeforeToTransfer);
+       
     }
 
     function withdrawEmergencyTokens(uint256 amount) external onlyOwner {
