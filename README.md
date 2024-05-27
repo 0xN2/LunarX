@@ -55,6 +55,11 @@ This project is licensed under the MIT License.
 Echidna: ![alt text](<Screenshot 2024-05-24 at 10.32.35 AM.png>)
 
 
-test
-echidna test-echidna/dex.t.echidna.sol --contract EchidnaDexTest --config echidna-config.yaml
+## Test Echidna
+```
+echidna test-echidna/dex.t.echidna.sol --contract EchidnaDexTest --config echidna-config.yaml 
+```
+
+```
 echidna test-echidna/vesting.t.echidna.sol --contract EchidnaVestingTest --config echidna-config.yaml
+```

@@ -8,104 +8,96 @@ contract EchidnaVestingTest {
     Vesting vesting;
     ERC20Mock token;
     address owner;
-    address beneficiary;
+    address user;
     address dexAddress;
-    uint256 expiryDuration;
 
-    bool lockCalled;
-    bool emergencyWithdrawCalled;
-    bool paused;
+    uint256 expiryDuration = 1 weeks;
 
     constructor() {
         owner = msg.sender;
-        beneficiary = address(0x2);
+        user = address(0x2);
         dexAddress = address(0x3);
-        expiryDuration = 1 weeks;
 
         token = new ERC20Mock();
         vesting = new Vesting(address(token), expiryDuration, owner);
 
-        // Mint tokens to owner
-        token.mint(owner, 10 ether);
-        token.mint(address(vesting), 10 ether);
-        // Transfer some tokens to the contract
-        //token.transfer(address(vesting), 10 ether);
-
-        // Initialize flags
-        lockCalled = false;
-        emergencyWithdrawCalled = false;
-        paused = false;
+        // Mint tokens to vesting contract
+        token.mint(address(vesting), 1000 ether);
+        token.mint(owner, 1000 ether);
     }
 
-    function setLockCalled() public {
-        //vesting.setDexAddress(dexAddress);
-        vesting.lock(1 ether, beneficiary);
-        lockCalled = true;
-    }
+    function echidna_test_lock_called() public returns (bool) {
+        // Reset state before test
+        vesting.setDexAddress(dexAddress);
+        uint256 initialAmount = vesting.getBeneficiaryAmount(user);
 
-    function setEmergencyWithdrawCalled() public {
-        vesting.withdrawEmergencyTokens(1 ether);
-        emergencyWithdrawCalled = true;
-    }
+        // Perform action
+        vesting.lock(10 ether, user);
 
-    function pauseContract() public {
-        vesting.pause();
-        paused = true;
-    }
-
-    function unpauseContract() public {
-        vesting.unpause();
-        paused = false;
-    }
-
-    
-    function echidna_test_lock_called() public  returns (bool) {
-              try 
-        vesting.lock(1 ether, beneficiary){
-                return true;
-            } catch {
-                return true;
-            }
-        
-        return true;
-    }
-
-    
-    function echidna_test_emergency_withdraw_called() public  returns (bool) {
-         if (block.timestamp < (block.timestamp + expiryDuration)) {
-            try vesting.withdrawEmergencyTokens(1 ether) {
-                return false;
-            } catch {
-                return true;
-            }
-        }
-        return true;
-    }
-
-    
-    function echidna_test_pause_unpause() public view returns (bool) {
-        return paused || !paused; 
-    }
-
-    function echidna_test_no_withdraw_before_expiry() public returns (bool) {
-        if (block.timestamp < (block.timestamp + expiryDuration)) {
-            try vesting.withdraw() {
-                return false;
-            } catch {
-                return true;
-            }
-        }
-        return true;
+        // Check invariant
+        return vesting.getBeneficiaryAmount(user) == initialAmount + 10 ether;
     }
 
     function echidna_test_withdraw_after_expiry() public returns (bool) {
-        if (block.timestamp >= (block.timestamp + expiryDuration + 1)) {
-            try vesting.withdraw() {
-                return true;
-            } catch {
-                return false;
-            }
+        // Assume this test runs after expiry time
+        if (block.timestamp > vesting.commonExpiry()) {
+            // Reset state before test
+            vesting.setDexAddress(dexAddress);
+            vesting.lock(10 ether, user);
+            uint256 initialBalance = token.balanceOf(user);
+
+            // Perform action
+            vesting.withdraw();
+
+            // Check invariant
+            return token.balanceOf(user) == initialBalance + 10 ether;
         }
-        return true;
+        return true; // Skip this test if current time is before expiry
+    }
+
+    function echidna_test_no_withdraw_before_expiry() public returns (bool) {
+        // Reset state before test
+        vesting.setDexAddress(dexAddress);
+        vesting.lock(10 ether, user);
+
+        if (block.timestamp < vesting.commonExpiry()) {
+            // Perform action
+            (bool success,) = address(vesting).call(abi.encodeWithSignature("withdraw()"));
+
+            // Check invariant
+            return !success; // Should fail as expiry hasn't passed
+        }
+        return true; // Skip this test if current time is after expiry
+    }
+
+    function echidna_test_emergency_withdraw_called() public returns (bool) {
+        // Reset state before test
+        uint256 initialBalance = token.balanceOf(owner);
+
+        // Perform action
+        vesting.withdrawEmergencyTokens(10 ether);
+
+        // Check invariant
+        return token.balanceOf(owner) == initialBalance + 10 ether;
+    }
+
+    function echidna_test_pause_unpause() public returns (bool) {
+        // Reset state before test
+        bool pausedBefore = vesting.paused();
+
+        // Perform actions
+        vesting.pause();
+        bool paused = vesting.paused();
+        vesting.unpause();
+        bool unpaused = !vesting.paused();
+
+        // Check invariants
+        return paused != pausedBefore && unpaused == pausedBefore;
+    }
+
+    function echidna_test_total_balance_consistency() public view returns (bool) {
+        uint256 totalTokenBalance = token.balanceOf(address(vesting)) + token.balanceOf(owner) + token.balanceOf(user);
+        return totalTokenBalance == 2000 ether; // Adjusted based on initial minting
     }
 }
+

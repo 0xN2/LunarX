@@ -4,16 +4,16 @@ pragma solidity 0.8.24;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 
-contract MockToken is ERC20 {
-    constructor() ERC20("MockToken", "MTK")  {}
+contract ERC20PermitMock is ERC20, ERC20Permit {
+    constructor() ERC20("MockToken", "MTK") ERC20Permit("") {}
 
     function mint(address to, uint256 amount) public {
         _mint(to, amount);
     }
 }
 
-contract MockToken2 is ERC20 {
-    constructor() ERC20("usdt", "MTK")  {}
+contract ERC20PermitMock2 is ERC20, ERC20Permit {
+    constructor() ERC20("MockToken", "MTK") ERC20Permit("") {}
 
     function mint(address to, uint256 amount) public {
         _mint(to, amount);
