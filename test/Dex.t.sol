@@ -4,13 +4,13 @@ pragma solidity 0.8.24;
 import "forge-std/Test.sol";
 import "../src/Dex.sol";
 import "../src/Vesting.sol";
-import "./ERC20mock.sol";
+import "./ERC20mockPermit.sol";
 
 contract DexTest is Test {
     Dex dex;
     Vesting vesting;
-    MockToken tokenX;
-    MockToken usdt;
+    ERC20PermitMock tokenX;
+    ERC20PermitMock2 usdt;
     address owner = address(0x1);
     address user = address(0x2);
     uint256 expiryDuration = 1 weeks;
@@ -18,8 +18,8 @@ contract DexTest is Test {
     uint256 constant USER_PRIVATE_KEY = 2; 
 
     function setUp() public {
-        tokenX = new MockToken();
-        usdt = new MockToken();
+        tokenX = new ERC20PermitMock();
+        usdt = new ERC20PermitMock2();
 
         vesting = new Vesting(address(tokenX), expiryDuration, owner);
         dex = new Dex(owner, address(vesting), address(tokenX), address(usdt));
