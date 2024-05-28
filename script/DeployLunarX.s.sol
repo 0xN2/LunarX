@@ -7,6 +7,7 @@ import "../src/tokenLunarX.sol";
 import "../src/tokenUsdt.sol";
 import "../src/Vesting.sol";
 import "../src/Dex.sol";
+import {LunarXFactory} from "../src/Factory.sol";
 
 contract RepayScript is Script {
     function run() external {
@@ -20,7 +21,7 @@ contract RepayScript is Script {
 
         address vestingAddress = 0xF8b5d87b3937fc8b256C62c2f0a82cc6F7295aDf;
 
-        address dexAddress =  0xfadFb34394186523c7Ba4CeC2C81cd754E8a9f3f;
+        address dexAddress = 0xfadFb34394186523c7Ba4CeC2C81cd754E8a9f3f;
 
         Vesting vestingContract = Vesting(vestingAddress);
         LunarX lunarXContract = LunarX(tokenLunarX);
@@ -30,19 +31,20 @@ contract RepayScript is Script {
 
         vm.startBroadcast(deployerPrivateKey);
 
-       // LunarX Lunar = new LunarX(ownerAddress);
-       
-       // UsdT Usd = new UsdT(ownerAddress);
-                
-        //Vesting vest = new Vesting(tokenLunarX, 2000, ownerAddress);
-        
-        //Dex dex = new Dex(ownerAddress, vestingAddress, tokenLunarX, tokenUsdt);
+        //LunarXFactory factory = new LunarXFactory();
 
+        // LunarX Lunar = new LunarX(ownerAddress);
+
+        // UsdT Usd = new UsdT(ownerAddress);
+
+        //Vesting vest = new Vesting(tokenLunarX, 2000, ownerAddress);
+
+        //Dex dex = new Dex(ownerAddress, vestingAddress, tokenLunarX, tokenUsdt);
 
         /////if owner could calling all together/////
         // the aprove of usdt, need will changed, for permit, take the signature, and after that call the method deposit
 
-       /*  vestingContract.setDexAddress(dexAddress);
+        /*  vestingContract.setDexAddress(dexAddress);
 
         lunarXContract.mint(dexAddress, 1000e18);
 
@@ -50,12 +52,11 @@ contract RepayScript is Script {
         
         dexContract.depositUSDTandReciveToken(10e6); */
 
-
         /////finish and withdraw
 
         // dexContract.withdraw(tokenUsdt);
 
-         //vestingContract.withdraw();
+        //vestingContract.withdraw();
 
         vm.stopBroadcast();
     }
