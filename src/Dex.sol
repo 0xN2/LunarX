@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
 contract Dex is ReentrancyGuard, Pausable, Ownable {
     IERC20 private immutable tokenX;
-   
+
     IERC20 private immutable usdt;
     IERC20Permit private immutable usdtPermit;
 
@@ -47,31 +47,47 @@ contract Dex is ReentrancyGuard, Pausable, Ownable {
     }
 
     function depositUSDTandReciveToken(
-        uint256 _amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s
+        uint256 _amount,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
     ) public nonReentrant whenNotPaused {
-        usdtBalances[msg.sender] += _amount;
-         IERC20Permit(usdtPermit).permit(
-            msg.sender, address(this), _amount , deadline, v, r, s
-        );
 
+        /// -------------------------------------------------------------------
+        /// Checks
+        /// -------------------------------------------------------------------
         uint256 allowance = usdt.allowance(msg.sender, address(this));
         require(allowance >= _amount, "Check the token allowance");
-        //usdt.transferFrom(msg.sender, address(this), _amount);
 
+        /// -------------------------------------------------------------------
+        /// Effects
+        /// -------------------------------------------------------------------
+        IERC20Permit(usdtPermit).permit(
+            msg.sender,
+            address(this),
+            _amount,
+            deadline,
+            v,
+            r,
+            s
+        );
+
+        usdtBalances[msg.sender] += _amount;
+
+        /// -------------------------------------------------------------------
+        /// Interactions
+        /// -------------------------------------------------------------------
         SafeERC20.safeTransferFrom(usdt, msg.sender, address(this), _amount);
 
         uint256 tokenToReceive = ((usdtBalances[msg.sender] *
             tokenX_PRICE_IN_USDT) * 1e12);
-        usdtBalances[msg.sender] -= _amount;
 
         SafeERC20.safeTransfer(
             tokenX,
             address(vestingContract),
             tokenToReceive
         );
-
-        /*  bool sent = tokenX.transfer(address(vestingContract), tokenToReceive);
-        require(sent, "Token transfer failed"); */
 
         vestingContract.lock(tokenToReceive, msg.sender);
     }
@@ -82,7 +98,7 @@ contract Dex is ReentrancyGuard, Pausable, Ownable {
 
     function withdraw(address _tokenAddress) public onlyOwner {
         IERC20 token = IERC20(_tokenAddress);
-        //token.transfer(msg.sender, token.balanceOf(address(this)));
+        
         SafeERC20.safeTransfer(
             token,
             msg.sender,
