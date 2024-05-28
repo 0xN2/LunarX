@@ -55,13 +55,7 @@ contract Dex is ReentrancyGuard, Pausable, Ownable {
     ) public nonReentrant whenNotPaused {
 
         /// -------------------------------------------------------------------
-        /// Checks
-        /// -------------------------------------------------------------------
-        uint256 allowance = usdt.allowance(msg.sender, address(this));
-        require(allowance >= _amount, "Check the token allowance");
-
-        /// -------------------------------------------------------------------
-        /// Effects
+        /// PermitSignature
         /// -------------------------------------------------------------------
         IERC20Permit(usdtPermit).permit(
             msg.sender,
@@ -73,6 +67,15 @@ contract Dex is ReentrancyGuard, Pausable, Ownable {
             s
         );
 
+        /// -------------------------------------------------------------------
+        /// Checks
+        /// -------------------------------------------------------------------
+        uint256 allowance = usdt.allowance(msg.sender, address(this));
+        require(allowance >= _amount, "Check the token allowance");
+
+        /// -------------------------------------------------------------------
+        /// Effects
+        /// -------------------------------------------------------------------
         usdtBalances[msg.sender] += _amount;
 
         /// -------------------------------------------------------------------
