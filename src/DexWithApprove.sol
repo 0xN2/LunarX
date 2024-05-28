@@ -7,15 +7,14 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 
-
 // TODO
 // cliff or delay to start, or setter method after deploy
 
 contract Dex is ReentrancyGuard, Pausable, Ownable {
     IERC20 private immutable tokenX;
-   
+
     IERC20 private immutable usdt;
-   
+
     address private immutable vestingAddress;
 
     Vesting private vestingContract;
@@ -40,7 +39,7 @@ contract Dex is ReentrancyGuard, Pausable, Ownable {
     ) Ownable(initialOwner) {
         tokenX = IERC20(_tokenX);
         usdt = IERC20(_tokenUsdt);
-       
+
         vestingAddress = _vestingAddress;
         vestingContract = Vesting(vestingAddress);
     }
@@ -48,17 +47,26 @@ contract Dex is ReentrancyGuard, Pausable, Ownable {
     function depositUSDTandReciveToken(
         uint256 _amount
     ) public nonReentrant whenNotPaused {
-        usdtBalances[msg.sender] += _amount;
-        
+        /// -------------------------------------------------------------------
+        /// Checks
+        /// -------------------------------------------------------------------
 
         uint256 allowance = usdt.allowance(msg.sender, address(this));
         require(allowance >= _amount, "Check the token allowance");
-        
+
+        /// -------------------------------------------------------------------
+        /// Effects
+        /// -------------------------------------------------------------------
+
+        usdtBalances[msg.sender] += _amount;
+
+        /// -------------------------------------------------------------------
+        /// Interactions
+        /// -------------------------------------------------------------------
+
         SafeERC20.safeTransferFrom(usdt, msg.sender, address(this), _amount);
 
-        uint256 tokenToReceive = ((usdtBalances[msg.sender] *
-            tokenX_PRICE_IN_USDT) * 1e12);
-        usdtBalances[msg.sender] -= _amount;
+        uint256 tokenToReceive = ((_amount * tokenX_PRICE_IN_USDT) * 1e12);
 
         SafeERC20.safeTransfer(
             tokenX,
@@ -75,7 +83,7 @@ contract Dex is ReentrancyGuard, Pausable, Ownable {
 
     function withdraw(address _tokenAddress) public onlyOwner {
         IERC20 token = IERC20(_tokenAddress);
-  
+
         SafeERC20.safeTransfer(
             token,
             msg.sender,
