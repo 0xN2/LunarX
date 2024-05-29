@@ -7,9 +7,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 
-// TODO
-// cliff or delay to start, or setter method after deploy
-
 contract Dex is ReentrancyGuard, Pausable, Ownable {
     IERC20 private immutable tokenX;
 
@@ -26,6 +23,12 @@ contract Dex is ReentrancyGuard, Pausable, Ownable {
 
     // keeps track of individuals' USDC balances
     mapping(address => uint256) public usdtBalances;
+
+    event dexDeposit(
+        address indexed beneficiary,
+        uint256 indexed amount,
+        uint256 indexed tokenToReceive
+    );
 
     /// @dev tokens ERC20
     // @param tokenX token to delivery, ERC20 with 18 decimals
@@ -75,6 +78,8 @@ contract Dex is ReentrancyGuard, Pausable, Ownable {
         );
 
         vestingContract.lock(tokenToReceive, msg.sender);
+
+        emit dexDeposit(msg.sender, _amount, tokenToReceive);
     }
 
     function getBalance(address _tokenAddress) public view returns (uint256) {
