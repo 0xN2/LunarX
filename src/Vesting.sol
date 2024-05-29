@@ -21,6 +21,14 @@ contract Vesting is ReentrancyGuard, Pausable, Ownable {
 
     mapping(address => ScheduleLocked) public beneficiaryVesting;
 
+    event vestingLock(
+        address indexed beneficiary,
+        uint256 indexed tokenToReceive,
+        uint256 indexed commonExpiry
+    );
+
+    event userWithdraw(address indexed beneficiary, uint256 indexed amount);
+
     constructor(
         address _token,
         uint256 _expiryDuration,
@@ -33,7 +41,6 @@ contract Vesting is ReentrancyGuard, Pausable, Ownable {
         commonExpiry = block.timestamp + _expiryDuration;
     }
 
-
     function lock(
         uint256 _amount,
         address _beneficiary
@@ -43,12 +50,16 @@ contract Vesting is ReentrancyGuard, Pausable, Ownable {
             msg.sender == owner() || msg.sender == dexAddress,
             "Unauthorized"
         );
-        require(dexAddress != address(0x0), "Remember set the Address of the Dex");
+        require(
+            dexAddress != address(0x0),
+            "Remember set the Address of the Dex"
+        );
         ScheduleLocked storage schedule = beneficiaryVesting[_beneficiary];
         if (!schedule.claimed) {
             // Add to the existing amount if not yet claimed
             schedule.amount += _amount;
         }
+        emit vestingLock(_beneficiary, _amount, commonExpiry);
     }
 
     function withdraw() external nonReentrant whenNotPaused {
@@ -59,11 +70,12 @@ contract Vesting is ReentrancyGuard, Pausable, Ownable {
         );
         require(!schedule.claimed, "Tokens have already been claimed");
         schedule.claimed = true;
-        uint256  amountBeforeToTransfer = schedule.amount;
+        uint256 amountBeforeToTransfer = schedule.amount;
         require(schedule.amount > 0, "not have amount of tokens to withdraw");
         schedule.amount = 0;
         SafeERC20.safeTransfer(token, msg.sender, amountBeforeToTransfer);
-       
+
+        emit userWithdraw(msg.sender, schedule.amount);
     }
 
     function withdrawEmergencyTokens(uint256 amount) external onlyOwner {
