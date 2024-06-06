@@ -110,4 +110,19 @@ contract DexTestApprove is Test {
         dex.withdraw(address(usdt));
         vm.stopPrank();
     }
-}
+
+    
+    function testFuzzDepositUSDTandReceiveToken(uint256 amount) public {
+        vm.assume(amount > 0 && amount < 1e19); 
+        console.log("Fuzz test with amount: ", amount);
+
+        vm.prank(user);
+        usdt.approve(address(dex), 1e19);
+        usdt.mint(address(this), amount*1e19);
+        tokenX.mint(address(dex), amount * 1e23);
+        dex.depositUSDTandReciveToken(amount);
+
+        uint256 expectedTokenXAmount = amount * tokenXPriceInUsdt * 1e12;
+        assertEq(vesting.getBeneficiaryAmount(user), expectedTokenXAmount);
+    }
+} 
